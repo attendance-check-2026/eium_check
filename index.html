@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이음 체육대회 출석</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px 20px;
+            background: #f4f4f9;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: inline-block;
+            max-width: 350px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+
+        <h2>📍 이음 현장 출석</h2>
+
+        <p>
+            고척 다목적 운동장<br>
+            현장에서만 출석 제출이 가능합니다.
+        </p>
+
+        <button id="locationButton">
+            위치 확인 및 출석하기
+        </button>
+
+        <div id="status"></div>
+
+    </div>
+
+    <script>
+
+        // 고척 다목적 운동장·테니스장 쪽 기준 좌표
+        const TARGET_LAT = 37.50535;
+        const TARGET_LNG = 126.85118;
+
+        // 기준 위치에서 80m 이내 출석 가능
+        const MAX_DISTANCE = 80;
+
+        // 구글폼 주소
+        const GOOGLE_FORM_URL =
+            "https://forms.gle/BiNJMohCSUG6eX9t7";
+
+
+        // 두 위치 사이의 거리 계산
+        function getDistance(lat1, lon1, lat2, lon2) {
+
+            const R = 6371000;
+
+            const dLat =
+                (lat2 - lat1) * Math.PI / 180;
+
+            const dLon =
+                (lon2 - lon1) * Math.PI / 180;
+
+            const a =
+                Math.sin(dLat / 2) *
+                Math.sin(dLat / 2) +
+
+                Math.cos(lat1 * Math.PI / 180) *
+                Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) *
+                Math.sin(dLon / 2);
+
+            return R * 2 * Math.atan2(
+                Math.sqrt(a),
+                Math.sqrt(1 - a)
+            );
+        }
+
+
+        // 버튼 클릭
+        document.getElementById("locationButton")
+            .addEventListener("click", function () {
+
+                const status =
+                    document.getElementById("status");
+
+                status.style.color = "#333";
+
+                status.innerText =
+                    "📍 현재 위치 확인 중...";
+
+
+                // 위치 기능 지원 여부
+                if (!navigator.geolocation) {
+
+                    status.style.color = "#ef4444";
+
+                    status.innerText =
+                        "❌ 이 브라우저는 위치 서비스를 지원하지 않습니다.";
+
+                    return;
+                }
+
+
+                // 현재 위치 확인
+                navigator.geolocation.getCurrentPosition(
+
+                    function (position) {
+
+                        const latitude =
+                            position.coords.latitude;
+
+                        const longitude =
+                            position.coords.longitude;
+
+
+                        const distance =
+                            getDistance(
+                                latitude,
+                                longitude,
+                                TARGET_LAT,
+                                TARGET_LNG
+                            );
+
+
+                        // 출석 가능 범위 안
+                        if (distance <= MAX_DISTANCE) {
+
+                            status.style.color =
+                                "#10b981";
+
+                            status.innerText =
+                                "✅ 현장 인증 성공!\n출석 페이지로 이동합니다.";
+
+
+                            setTimeout(function () {
+
+                                window.location.href =
+                                    GOOGLE_FORM_URL;
+
+                            }, 1000);
+
+                        }
+
+
+                        // 출석 가능 범위 밖
+                        else {
+
+                            status.style.color =
+                                "#ef4444";
+
+                            status.innerText =
+                                "❌ 행사장 외부에 있습니다.\n" +
+                                "(현재 거리: " +
+                                Math.round(distance) +
+                                "m)";
+
+                        }
+
+                    },
+
+
+                    function (error) {
+
+                        status.style.color =
+                            "#ef4444";
+
+
+                        if (error.code === 1) {
+
+                            status.innerText =
+                                "⚠️ 위치 접근을 허용해야 출석이 가능합니다.";
+
+                        }
+
+                        else if (error.code === 2) {
+
+                            status.innerText =
+                                "⚠️ 현재 위치를 확인할 수 없습니다.";
+
+                        }
+
+                        else if (error.code === 3) {
+
+                            status.innerText =
+                                "⚠️ 위치 확인 시간이 초과되었습니다.\n잠시 후 다시 시도해주세요.";
+
+                        }
+
+                        else {
+
+                            status.innerText =
+                                "⚠️ 위치 확인 중 오류가 발생했습니다.";
+
+                        }
+
+                    },
+
+
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
+                        maximumAge: 0
+                    }
+
+                );
+
+            });
+
+    </script>
+
+</body>
+</html>
