@@ -68,14 +68,16 @@
 
     </div>
 
+
     <script>
 
-        // 고척 다목적 운동장·테니스장 쪽 기준 좌표
+        // 고척 다목적 운동장 기준 위치
         const TARGET_LAT = 37.50535;
         const TARGET_LNG = 126.85118;
 
-        // 기준 위치에서 80m 이내 출석 가능
-        const MAX_DISTANCE = 80;
+        // 테니스장부터 구령대 쪽까지 포함하도록
+        // 출석 가능 범위를 150m로 설정
+        const MAX_DISTANCE = 150;
 
         // 구글폼 주소
         const GOOGLE_FORM_URL =
